@@ -97,7 +97,7 @@ exports.updateDraft = async (req, res) => {
         console.log("Received request to update draft email");
 
         const emailId = req.params.id; 
-        const { receivers, subject, body } = req.body; 
+        const { receivers, subject, body , status} = req.body; 
 
         if (!receivers || !Array.isArray(receivers) || receivers.length === 0) {
             return res.status(400).json({ error: "Receivers are required" });
@@ -113,6 +113,7 @@ exports.updateDraft = async (req, res) => {
             receivers,
             subject,
             body,
+            status
         };
 
         const updatedEmail = await emailService.updateDraft(emailId, updatedData);

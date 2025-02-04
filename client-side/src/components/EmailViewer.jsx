@@ -13,7 +13,7 @@ const EmailViewer = ({ email }) => {
                 <Typography variant="body2" color="textSecondary" sx={{ marginLeft: "auto" }}>{email.time}</Typography>
             </Box>
             <Typography>
-                This is a placeholder for the email body content. Replace with the actual email content.
+                
             </Typography>
         </Paper>
     );
