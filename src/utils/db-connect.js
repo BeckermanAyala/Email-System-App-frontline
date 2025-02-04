@@ -1,55 +1,47 @@
-
-const { MongoClient } = require("mongodb");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
 dotenv.config();
 
-const DB_NAME = process.env.DB_NAME; // שם בסיס הנתונים
-const DB_URL = process.env.DB_URL;  // כתובת החיבור למסד הנתונים
+const DB_URL = process.env.DB_URL;
 
 class DBConnect {
     constructor() {
-        // הגדרת MongoClient עם Timeout והגדרות נוספות
-        this.dbConn = new MongoClient(DB_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000, // זמן המתנה לבחירת שרת
-            socketTimeoutMS: 45000,        // זמן המתנה לחיבור סוקטים
-            tls: true,                     // חיבור מאובטח
-            tlsAllowInvalidCertificates: true // מתיר תעודות TLS לא חוקיות (אם נדרש)
-        });
+        this.isConnected = false;
     }
 
     async init() {
         try {
-            // התחברות למסד הנתונים
-            await this.dbConn.connect();
-            console.log("🚀 DB is connected successfully");
+            if (this.isConnected) {
+                console.log("Already connected to MongoDB");
+                return;
+            }
 
-            // בדיקת Ping למסד הנתונים
-            const admin = this.dbConn.db().admin();
-            const pingResult = await admin.ping();
-            console.log("✅ Ping result:", pingResult);
+            console.log(`Connecting to MongoDB at ${DB_URL}...`);
+            await mongoose.connect(DB_URL, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+                serverSelectionTimeoutMS: 30000,
+                socketTimeoutMS: 60000,
+            });
+
+            this.isConnected = true;
+            console.log("MongoDB connected successfully");
         } catch (error) {
-            console.error("Error connecting to MongoDB:", error.message);
+            console.error("MongoDB Connection Error:", error.message);
             throw error;
         }
     }
 
-    // פונקציה לקבלת אובייקט DB
-    getDB(dbName = DB_NAME) {
-        return this.dbConn.db(dbName);
-    }
-
-    // סגירת חיבור למסד הנתונים
     async terminate() {
         try {
-            await this.dbConn.close();
-            console.log("DB is closed successfully");
+            await mongoose.connection.close();
+            this.isConnected = false;
+            console.log("MongoDB Connection Closed");
         } catch (error) {
-            console.error("Error closing the DB connection:", error.message);
+            console.error("Error closing MongoDB connection:", error.message);
         }
     }
 }
 
-module.exports = DBConnect;
+module.exports = new DBConnect();

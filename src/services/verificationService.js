@@ -3,65 +3,58 @@ const jwt = require("jsonwebtoken");
 const userRepository = require("../repositories/verificationRepository");
 
 exports.register = async ({ name, email, password }) => {
-    console.log("authService - Start register with:", { name, email }); // לוג התחלת רישום
+    console.log("🔹 Registering new user:", { name, email });
+
     try {
-        // בודק אם המשתמש כבר קיים
         const existingUser = await userRepository.findByEmail(email);
         if (existingUser) {
-            console.error("authService - User already exists with email:", email);
+            console.error("User already exists:", email);
             throw new Error("User already exists");
         }
 
-        // מצפין את הסיסמה
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log("authService - Password hashed successfully");
+        console.log("🔹 Password hashed successfully:", hashedPassword);
 
-        // יוצר את המשתמש ושומר אותו במסד הנתונים
-        const newUser = await userRepository.create({
-            name,
-            email,
-            password: hashedPassword
-        });
-        console.log("authService - User created successfully:", newUser);
+        const newUser = await userRepository.create({ name, email, password: hashedPassword });
+        console.log("User created successfully:", newUser);
 
-        // מחזיר את המשתמש החדש (ללא הסיסמה)
         return { _id: newUser._id, name: newUser.name, email: newUser.email };
     } catch (error) {
-        console.error("authService - Error in register:", error.message);
+        console.error("Error in register:", error.message);
         throw error;
     }
 };
-
 exports.login = async ({ email, password }) => {
-    console.log("authService - Start login with email:", email); // לוג התחלת התחברות
+    console.log("🔹 Logging in with email:", email);
+
     try {
-        // מחפש את המשתמש לפי אימייל
         const user = await userRepository.findByEmail(email);
         if (!user) {
-            console.error("authService - User not found with email:", email);
+            console.error("User not found:", email);
             throw new Error("Invalid email or password");
         }
 
-        // בודק אם הסיסמה תואמת לסיסמה המוצפנת
+      
+        console.log("🔹 Comparing passwords...");
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            console.error("authService - Password mismatch for email:", email);
+            console.error("Password mismatch for:", email);
             throw new Error("Invalid email or password");
         }
-        console.log("authService - Password matched successfully");
 
-        // יוצר טוקן JWT עבור המשתמש
+        console.log("Password matched successfully");
+
+        
         const token = jwt.sign(
-            { id: user._id },
+            { id: user._id, email: user.email }, 
             process.env.JWT_SECRET,
-            { expiresIn: "1h" } // תוקף הטוקן הוא שעה
+            { expiresIn: "1h" }
         );
-        console.log("authService - Token generated successfully");
+        console.log("Token generated:", token);
 
-        // מחזיר את הטוקן
         return token;
     } catch (error) {
-        console.error("authService - Error in login:", error.message);
+        console.error("Error in login:", error.message);
         throw error;
     }
 };
