@@ -6,7 +6,7 @@ exports.getInboxEmails = async (userEmail) => {
         const emails = await Email.find({
             receivers: { $in: [userEmail] },
             status: "inbox"
-        });
+        }).sort({ createdAt: -1 }).lean();
 
         console.log("Emails found:", emails);
         return emails;
@@ -15,13 +15,14 @@ exports.getInboxEmails = async (userEmail) => {
         throw error;
     }
 };
+
 exports.getOutboxEmails = async (userEmail) => {
     try {
         console.log(`Fetching outbox emails for userEmail: ${userEmail}`);
         const emails = await Email.find({
-            receivers: { $in: [userEmail] },
-            status: "outbox"
-        });
+            sender: userEmail,
+            status: "inbox"
+        }).sort({ createdAt: -1 }).lean();
 
         console.log("Emails found:", emails);
         return emails;
@@ -35,9 +36,9 @@ exports.getDraftEmails = async (userEmail) => {
     try {
         console.log(`Fetching draft emails for userEmail: ${userEmail}`);
         const emails = await Email.find({
-            receivers: { $in: [userEmail] },
+            sender: userEmail, 
             status: "draft"
-        });
+        }).sort({ createdAt: -1 }).lean(); 
 
         console.log("Emails found:", emails);
         return emails;
@@ -46,6 +47,7 @@ exports.getDraftEmails = async (userEmail) => {
         throw error;
     }
 };
+
 
 
 exports.createEmail = async (emailData) => {
@@ -67,7 +69,7 @@ exports.updateDraft = async (emailId, updatedData) => {
         console.log(`Updating draft email with ID: ${emailId}`);
 
         const updatedEmail = await Email.findOneAndUpdate(
-            { _id: emailId, status: "draft" }, 
+            { _id: emailId}, 
             { $set: updatedData }, 
             { new: true } 
         );
