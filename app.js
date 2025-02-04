@@ -19,7 +19,6 @@ app.use(express.json());
         await DBConnect.init(); 
         console.log("Database initialized");
         
-        // Routes
         app.use("/api/auth", authRoutes);
         app.use("/api/emails", emailRoutes);
 
