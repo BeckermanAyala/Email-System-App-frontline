@@ -25,7 +25,7 @@ exports.register = async ({ name, email, password }) => {
     }
 };
 exports.login = async ({ email, password }) => {
-    console.log("🔹 Logging in with email:", email);
+    console.log("Logging in with email:", email);
 
     try {
         const user = await userRepository.findByEmail(email);
@@ -35,7 +35,7 @@ exports.login = async ({ email, password }) => {
         }
 
       
-        console.log("🔹 Comparing passwords...");
+        console.log("Comparing passwords...");
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             console.error("Password mismatch for:", email);
