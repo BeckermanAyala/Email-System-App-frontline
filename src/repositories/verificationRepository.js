@@ -33,17 +33,3 @@ exports.create = async (userData) => {
         throw error;
     }
 };
-exports.createEmail = async (emailData) => {
-    try {
-        console.log("Creating a new email:", emailData);
-
-        const newEmail = new Email(emailData);
-        const savedEmail = await newEmail.save();
-
-        console.log("Email created successfully:", savedEmail);
-        return savedEmail._id; 
-    } catch (error) {
-        console.error("Error in emailRepository.createEmail:", error.message);
-        throw error;
-    }
-};
